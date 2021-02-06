@@ -89,7 +89,7 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
         FloatBuffer vBuf = Buffers.newDirectFloatBuffer(positions);
         gl.glBufferData(GL4.GL_ARRAY_BUFFER, vBuf.limit() * Float.BYTES, vBuf, GL4.GL_STATIC_DRAW);
 
-        animtr = new FPSAnimator(this, 30);
+        animtr = new FPSAnimator(this, 60);
         animtr.start();
 
         UtilsGL.checkOpenGLError();
@@ -131,7 +131,7 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
         
         UtilsGL.checkOpenGLError();
         
-        cam.loc.print();
+        //cam.loc.print();
     }
 
     @Override
