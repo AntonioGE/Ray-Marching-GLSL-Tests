@@ -5,7 +5,7 @@ The tool uses the Java OpenGL library (JOGL) and GLSL for implmenting the fragme
 
 The user can use the mouse for navigating and orbiting around the fractal.
 
-## Example
+### Example
 
 <p align="center">
   <img src="examples/Mandelbulb.png">
