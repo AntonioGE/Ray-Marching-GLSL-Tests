@@ -24,13 +24,9 @@ float sphereDist(vec3 point, vec3 sphereCoords, float sphereRadius){
 float manySpheres(vec3 point){
     point.xy = mod((point.xy), 1.0) - vec2(0.5);
     return length(point)-0.3;
-    //point = mod(point, 1.0) - vec3(0.5);
-    //return length(point)-0.3;
 }
 
 float getDist(vec3 point){
-    //return min(sphereDist(point, vec3(0, 0, 0), 1.0), sphereDist(point, vec3(2, 0, 0), 1.0));
-    //return sphereDist(point, vec3(0, 0, 0), 0.1);
     return manySpheres(point);
 }
 
@@ -46,7 +42,6 @@ vec3 getNormal(vec3 point){
     return normalize(n);
 }
 
-
 vec2 rayMarch(vec3 from, vec3 dir, inout int objIndex, vec3 sunDir, inout float diffuse){
     float totalDist = 0.0; 
     int i;
@@ -56,7 +51,12 @@ vec2 rayMarch(vec3 from, vec3 dir, inout int objIndex, vec3 sunDir, inout float 
         totalDist += dist;
         if(dist < SURF_DIST){
             objIndex = 1;
-            diffuse = max(0.0, dot(getNormal(point), sunDir));
+
+            vec3 lightPos = vec3(2.0, -5.0, 3.0);
+            vec3 lightDir = normalize(point - lightPos);
+            diffuse = max(0.5, dot(getNormal(point), lightDir));
+
+            //diffuse = max(0.5, dot(getNormal(point), sunDir));
             return vec2(totalDist, i);
         }else if(totalDist > MAX_DIST){
             objIndex = 0;
@@ -94,7 +94,7 @@ void main(){
     vec3 dir = camTransf * normalize(vec3(uv, -1.0));
 
     int objIndex;
-    vec3 sunDir = normalize(vec3(-1.0f, -1.0f, -1.0f));
+    vec3 sunDir = normalize(vec3(1.0, 1.0, 1.0));
     float diffuse;
     vec2 dist_steps = rayMarch(from, dir, objIndex, sunDir, diffuse);
     float dist = dist_steps.x / MAX_DIST;
@@ -106,13 +106,4 @@ void main(){
     vec3 rgb = hsv2rgb(vec3(mix(hsvDist.x, hsvGlow.x, steps), sat, min(diffuse, max(1.0 - dist, steps))));
     gl_FragColor = vec4(rgb, 1.0);
     
-
-    //vec3 sun = normalize(vec3(-1.0f, -1.0f, -1.0f));
-    //float diffuse = max(0.0, dot(normal, direction_to_light));
-
-    //vec3 rgb = hsv2rgb(vec3(mix(hue[objIndex], glowHue, steps), 0.5, steps));
-    //gl_FragColor = vec4(rgb, 1.0);
-
-    //vec3 rgb = hsv2rgb(vec3(hue[objIndex], 0.5, steps));
-    //gl_FragColor = vec4(value, value, value, 1.0);
 }

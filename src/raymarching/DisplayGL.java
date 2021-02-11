@@ -64,6 +64,10 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
     private float lastMouseX, lastMouseY;
     
     private Cam cam = new Cam(new Vec3f(10.0f, 0.0f, 0.0f), new Vec3f(0.0f, 0.0f, 0.0f), 60.0f);
+    private Vec3f lightPos = new Vec3f(3.0f, 0.0f, 3.0f);
+    private float hueOffset = 0.0f;
+    private float powerOffset = 0.0f;
+    private float power = 0.0f;
     
     public DisplayGL(){
         addGLEventListener(this);
@@ -79,7 +83,7 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
 
         gl.glClearColor(0.5f, 0.0f, 1.0f, 1.0f);
 
-        shaderProgram = UtilsGL.createShaderProgram(gl, "shaders/vert.vs", "shaders/frag.fs");
+        shaderProgram = UtilsGL.createShaderProgram(gl, "shaders/vert.vs", "shaders/reflectionSphere.fs");
 
         gl.glGenVertexArrays(vao.length, vao, 0);
         gl.glBindVertexArray(vao[0]);
@@ -123,6 +127,20 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
         int unifCamTransf = gl.glGetUniformLocation(shaderProgram, "camTransf");
         gl.glUniformMatrix3fv(unifCamTransf, 1, false, cam.getLocalAxis3f().toArray(), 0);
         
+        int unifLightPos = gl.glGetUniformLocation(shaderProgram, "lightPos");
+        gl.glUniform3f(unifLightPos, lightPos.x, lightPos.y, lightPos.z);
+        
+        int unifHueOffset = gl.glGetUniformLocation(shaderProgram, "hueOffset");
+        gl.glUniform1f(unifHueOffset, hueOffset);
+        
+        int unifPower = gl.glGetUniformLocation(shaderProgram, "power");
+        gl.glUniform1f(unifPower, power);
+        
+        lightPos.rotateAround(new Vec3f(0.0f, 0.0f, 0.0f), new Vec3f(0.0f, 0.0f, 1.0f), 0.01f);
+        hueOffset = (hueOffset + 0.002f) % 1.0f;
+        power = 9.0f;
+        //powerOffset =  powerOffset + 0.005f;
+        //power = 4.0f * (float)Math.sin(powerOffset) + 8.0f;
         
         gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vbo[0]);
         gl.glVertexAttribPointer(0, 3, GL4.GL_FLOAT, false, 0, 0);
