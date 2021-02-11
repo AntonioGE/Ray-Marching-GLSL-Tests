@@ -68,6 +68,7 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
     private float hueOffset = 0.0f;
     private float powerOffset = 0.0f;
     private float power = 0.0f;
+    private float radius = 1.0f;
     
     public DisplayGL(){
         addGLEventListener(this);
@@ -136,11 +137,15 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
         int unifPower = gl.glGetUniformLocation(shaderProgram, "power");
         gl.glUniform1f(unifPower, power);
         
+        int unifRadius = gl.glGetUniformLocation(shaderProgram, "radius");
+        gl.glUniform1f(unifRadius, radius);
+        
         lightPos.rotateAround(new Vec3f(0.0f, 0.0f, 0.0f), new Vec3f(0.0f, 0.0f, 1.0f), 0.01f);
         hueOffset = (hueOffset + 0.002f) % 1.0f;
         power = 9.0f;
-        //powerOffset =  powerOffset + 0.005f;
+        powerOffset =  powerOffset + 0.05f;
         //power = 4.0f * (float)Math.sin(powerOffset) + 8.0f;
+        radius = 0.25f * (float)Math.sin(powerOffset) + 1.0f;
         
         gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vbo[0]);
         gl.glVertexAttribPointer(0, 3, GL4.GL_FLOAT, false, 0, 0);

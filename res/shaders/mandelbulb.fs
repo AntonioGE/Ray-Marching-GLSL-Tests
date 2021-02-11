@@ -15,6 +15,9 @@ uniform vec3 lightPos;
 //Hue
 uniform float hueOffset;
 
+//Sphere
+uniform float radius;
+
 //Constants
 int MAX_STEPS_RAY = 100;
 float MAX_DIST = 100.0;
@@ -29,6 +32,11 @@ const int PLANE_ID = 1;
 const int SPHERE_ID = 2;
 float[] hue = {0.3, 0.3, 0.6};
 
+float smoothMin(float dstA, float dstB, float k){
+    float h = max(k - abs(dstA-dstB), 0) / k;
+    return min(dstA, dstB) - h*h*h*k*1/6.0;
+}
+
 float planeDist(vec3 point){
     return abs(point.z + 2);
 }
@@ -39,7 +47,7 @@ float sphereDist(vec3 point, vec3 sphereCoords, float sphereRadius){
 
 float getDist(vec3 point, inout int objIndex){
     float planeDist = planeDist(point);
-    float sphereDist = sphereDist(point, vec3(0.0, 0.0, 0.0), 1.0);
+    float sphereDist = sphereDist(point, vec3(0.0, 0.0, 0.0), radius);
     if(planeDist < sphereDist){
         objIndex = PLANE_ID;
         return planeDist;
@@ -82,9 +90,12 @@ float mandle(vec3 pos) {
 float getDist(vec3 point){
     //return min(planeDist(point), mandle(point));
     return mandle(point);
+    //return min(mandle(point), sphereDist(point, vec3(0.0, 0.0, 0.0), 1.0));
+    //return smoothMin(mandle(point), sphereDist(point, vec3(0.0, 0.0, 0.0), radius), 0.1);
+    //return max(mandle(point), -sphereDist(point, vec3(0.0, 0.0, 1.0), 0.5));
 }
 
-vec3 getNormal(vec3 point){
+vec3 getNormal(vec3 point) {
     float d = getDist(point);
     vec2 e = vec2(0.00001, 0);
 
@@ -96,19 +107,48 @@ vec3 getNormal(vec3 point){
     return normalize(n);
 }
 
-float shadow(vec3 from, vec3 dir, float mint, float maxt )
-{
-    for( float t=mint; t<maxt; )
-    {
+float shadow(vec3 from, vec3 dir, float mint, float maxt ) {
+    for(float t = mint; t < maxt; ) {
         float h = getDist(from + dir * t);
-        if( h<0.001 )
+        if(h < 0.001){
             return 0.0;
+        }
         t += h;
     }
     return 1.0;
 }
 
-vec2 rayMarch(vec3 from, vec3 dir, inout int objIndex, inout float diffuse){
+float softShadow(vec3 from, vec3 dir, float mint, float maxt, float k ){
+    float res = 1.0;
+    for(float t = mint; t < maxt;) {
+        float h = getDist(from + dir * t);
+        if( h < 0.001 )
+            return 0.0;
+        res = min( res, k*h/t );
+        t += h;
+    }
+    return res;
+}
+
+float softerShadow( vec3 from, vec3 dir, float mint, float maxt, float k )
+{
+    float res = 1.0;
+    float ph = 1e20;
+    for( float t=mint; t<maxt; )
+    {
+        float h = getDist(from + dir * t);
+        if( h<0.001 )
+            return 0.0;
+        float y = h*h/(2.0*ph);
+        float d = sqrt(h*h-y*y);
+        res = min( res, k*d/max(0.0,t-y) );
+        ph = h;
+        t += h;
+    }
+    return res;
+}
+
+vec2 rayMarch(vec3 from, vec3 dir, inout int objIndex, inout float diffuse, inout float specular){
     float totalDist = 0.0; 
     int i;
     for(i = 0; i < MAX_STEPS_RAY; i++){
@@ -119,13 +159,20 @@ vec2 rayMarch(vec3 from, vec3 dir, inout int objIndex, inout float diffuse){
         totalDist += dist;
         if(dist < SURF_DIST){
             vec3 lightDir = normalize(lightPos - point);
-            diffuse = max(0.2, dot(getNormal(point), lightDir));
+            vec3 normal = getNormal(point);
+            diffuse = max(0.2, dot(normal, lightDir));
 
             vec3 surf = from + dir * totalDist;
             vec3 surfLight = normalize(lightPos - surf);
-            float shad = max(0.2, shadow(surf, surfLight, 0.01, 10.0));
+            //float shad = max(0.2, shadow(surf, surfLight, 0.01, 10.0));
+            float shad = max(0.2, softShadow(surf, surfLight, 0.01, 10.0, 8.0));
             diffuse = diffuse * shad;
             
+            specular = pow(diffuse, 8);
+            
+            //vec3 refl = dir - 2.0 * dot(dir, normal) * normal;
+            //specular = (dot(refl, lightDir) + 0.1) * shad;
+
             return vec2(totalDist, i);
         }else if(totalDist > MAX_DIST){
             objIndex = VOID_ID;
@@ -163,13 +210,14 @@ void main(){
 
     int objIndex = VOID_ID;
     float diffuse = 0.0;
-    vec2 dist_steps = rayMarch(from, dir, objIndex, diffuse);
+    float specular = 0.0;
+    vec2 dist_steps = rayMarch(from, dir, objIndex, diffuse, specular);
     float dist = dist_steps.x / MAX_DIST;
     float steps = dist_steps.y / MAX_STEPS_RAY;
 
     float sat = 1.0;
     //vec3 hsv = vec3(hue[objIndex], sat, diffuse);
-    vec3 hsv = vec3(steps / 2.0 + hueOffset, sat, max(diffuse * (1 - dist) , steps) );
+    vec3 hsv = vec3(steps / 2.0 + hueOffset, sat - specular, max(diffuse * (1 - dist) , steps));
     gl_FragColor = vec4(hsv2rgb(hsv), 1.0);
     //vec3 hsvGlow = vec3(glowHue, sat, steps);
     //vec3 rgb = hsv2rgb(vec3(mix(hsvDist.x, hsvGlow.x, steps), sat, min(diffuse, max(1.0 - dist, steps))));
