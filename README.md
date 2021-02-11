@@ -2,5 +2,5 @@
 Java GLSL ray marching tests
 
 <p align="center">
-  <img src="examples/MandelBulb.png">
+  <img src="examples/Mandelbulb.png">
 </p>
