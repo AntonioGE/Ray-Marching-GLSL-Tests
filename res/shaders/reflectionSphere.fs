@@ -20,8 +20,8 @@ int MAX_STEPS_RAY = 100;
 float MAX_DIST = 100.0;
 float SURF_DIST = 0.001;
 
-int Iterations = 20;
-float Bailout = 2.0;
+int iterations = 20;
+float bailout = 2.0;
 uniform float power = 8;
 
 const int VOID_ID = 0;
@@ -55,17 +55,14 @@ float getDist(vec3 point){
 }*/
 
 
-
-
 float mandle(vec3 pos) {
     vec3 z = pos;
     float dr = 1.0;
     float r = 0.0;
-    for (int i = 0; i < Iterations ; i++) {
+    for (int i = 0; i < iterations ; i++) {
         r = length(z);
-        if (r>Bailout) break;
+        if (r>bailout) break;
 
-        // convert to polar coordinates
         float theta = acos(z.z/r);
         float phi = atan(z.y,z.x);
         dr =  pow( r, power-1.0)*power*dr + 1.0;

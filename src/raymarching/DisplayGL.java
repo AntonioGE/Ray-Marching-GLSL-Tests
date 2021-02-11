@@ -63,7 +63,7 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
     
     private float lastMouseX, lastMouseY;
     
-    private Cam cam = new Cam(new Vec3f(10.0f, 0.0f, 0.0f), new Vec3f(0.0f, 0.0f, 0.0f), 60.0f);
+    private Cam cam = new Cam(new Vec3f(3.0f, 0.0f, 0.0f), new Vec3f(0.0f, 0.0f, 0.0f), 60.0f);
     private Vec3f lightPos = new Vec3f(3.0f, 0.0f, 3.0f);
     private float hueOffset = 0.0f;
     private float powerOffset = 0.0f;
