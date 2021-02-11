@@ -83,7 +83,7 @@ public class DisplayGL extends GLJPanel implements GLEventListener,
 
         gl.glClearColor(0.5f, 0.0f, 1.0f, 1.0f);
 
-        shaderProgram = UtilsGL.createShaderProgram(gl, "shaders/vert.vs", "shaders/reflectionSphere.fs");
+        shaderProgram = UtilsGL.createShaderProgram(gl, "shaders/vert.vs", "shaders/mandelbulb.fs");
 
         gl.glGenVertexArrays(vao.length, vao, 0);
         gl.glBindVertexArray(vao[0]);
