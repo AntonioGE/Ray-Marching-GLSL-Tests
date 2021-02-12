@@ -50,6 +50,7 @@ public class MainFrame extends javax.swing.JFrame {
         displayGL1 = new raymarching.DisplayGL();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Test Ray Marching");
 
         javax.swing.GroupLayout displayGL1Layout = new javax.swing.GroupLayout(displayGL1);
         displayGL1.setLayout(displayGL1Layout);
