@@ -30,7 +30,6 @@ uniform float power = 8;
 const int VOID_ID = 0;
 const int PLANE_ID = 1;
 const int SPHERE_ID = 2;
-float[] hue = {0.3, 0.3, 0.6};
 
 float smoothMin(float dstA, float dstB, float k){
     float h = max(k - abs(dstA-dstB), 0) / k;
